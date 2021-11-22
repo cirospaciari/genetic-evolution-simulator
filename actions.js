@@ -53,20 +53,7 @@ function move_to_direction(event, value){
             return move_down(event, value);
     }
 }
-// function follow_close(event, value){
-//     //follow close event
-//     if (value < 0 && Math.random() > value) return;
-//     for (let x = 0; x < 2; x++) {
-//         for (let y = 0; y < 2; y++) {
-//             const target = getEventforwand(event.x + x, event.y + y, event.direction);
-//             if (target){
-//                 event.direction = target.direction;
-//                 move_to_direction(event, value);
-//                 return;
-//             }
-//         }
-//     }
-// }
+
 
 function move_random(event, value) {
     if (value < 0 && Math.random() > value) return;

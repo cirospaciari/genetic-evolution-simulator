@@ -15,21 +15,22 @@ function time_diff() {
 
 function has_event_forwand(brain) {
     const event = brain.event;
-
-    return getEventforwand(event.x, event.y, event.direction);
+    //TODO: calculate urge
+    return getEventforwand(event.x, event.y, event.direction) ? 1.0 : 0.0;
 }
 
 function has_damage(brain) {
     const event = brain.event;
-    return event.last_hp !== undefined && event.last_hp != event.hp;
+    //TODO: calculate more urge if has more damage
+    return event.last_hp !== undefined && event.last_hp != event.hp ? 1.0 : 0.0;
 }
 
 function has_someone_around(brain) {
     const event = brain.event;
 
-    for (let i = 1; i < 5; i++)
-        if (getEventforwand(event.x, event.y, i)) return true;
-    return false;
+    for (let i = 1; i < 5; i++) //TODO: calculate  urge to move
+        if (getEventforwand(event.x, event.y, i)) return 1.0;
+    return 0.0;
 }
 
 function has_someone_close(brain) {
@@ -37,12 +38,12 @@ function has_someone_close(brain) {
 
     for (let x = 0; x < 2; x++) {
         for (let y = 0; y < 2; y++) {
-            for (let i = 1; i < 5; i++) {
-                if (getEventforwand(event.x + x, event.y + y, i)) return true;
+            for (let i = 1; i < 5; i++) { //TODO:calculate distance and urge to move
+                if (getEventforwand(event.x + x, event.y + y, i)) return 1.0;
             }
         }
     }
-    return false;
+    return 0.0;
 }
 
 const inputs = [random_input, time_diff, has_event_forwand, has_damage, has_someone_around, has_someone_close];

@@ -74,7 +74,7 @@ function draw() {
                     let new_genome = brain.genome;
 
                     if (Math.random() < MUTATION_RATE) new_genome = mutateGenome(new_genome);
-                    const event = { ...brain.event, ...getRandomAvailablePosition(), age: 0, color: genomeColor(new_genome), hp: 100 };
+                    const event = { ...brain.event, ...getRandomAvailablePosition(), age: 0, color: genomeColor(new_genome), hp: 100, killed: false };
                     setPosition(event.x, event.y, event);
                     const new_brain = getBrainFrom(new_genome, event, brain.total_neurons);
                     events.push(new_brain);
