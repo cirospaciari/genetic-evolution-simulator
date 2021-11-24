@@ -1,46 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <style>
-        html,body {
+        html,
+        body {
             margin: 0;
             border: 0;
             padding: 0;
         }
+
         .survival_zone {
-            background-color: rgba(0,100,0,0.5);
-            width: 305px;
-            height: 305px;
+            background-color: rgba(0, 100, 0, 0.5);
+            width: 125px;
+            height: 125px;
             position: absolute;
             z-index: 10;
         }
-        .survival_zone.top_left{
+
+        .survival_zone.top_left {
             top: 0;
             left: 0;
         }
-        .survival_zone.top_right{
+
+        .survival_zone.top_right {
             top: 0;
-            left: 700px;
+            left: 280px;
         }
-        .survival_zone.down_right{
-            top: 700px;
-            left: 700px;
+
+        .survival_zone.down_right {
+            top: 280px;
+            left: 280px;
         }
-        .survival_zone.down_left{
-            top: 700px;
+
+        .survival_zone.down_left {
+            top: 280px;
             left: 0;
         }
+
         #stats {
             position: absolute;
             top: 0;
-            left: 1100px;
+            left: 510px;
+        }
+
+        .scroll-x {
+            width: calc(100vw - 550px);
+            overflow-x: auto;
+        }
+
+        .scroll-x p {
+            display: block;
+            word-break: keep-all;
+            white-space: nowrap;
+        }
+
+        #mermaid-wrapper {
+            width: 100vw;
+        }
+
+        #most_popular_genomes a {
+            margin-right: 10px;
         }
     </style>
 </head>
+
 <body>
     <canvas id="viewport"></canvas>
     <div class="survival_zone top_left"></div>
@@ -51,51 +79,68 @@
         <p>Generation: <span id="generation_label"></span></p>
         <p>Survival Rate: <span id="survival_rate_label"></span></p>
         <p>Kills: <span id="kills_rate_label"></span></p>
+        <p>Diversity: <span id="diversity_label"></span></p>
+
+        <p>Genomes by Popularity:</p>
+        <div class="scroll-x">
+            <p id="most_popular_genomes"></p>
+        </div>
+
+        <p>Most Popular Genome:</p>
+        <div class="scroll-x">
+            <p id="most_popular_genome"></p>
+        </div>
+        <div id="mermaid-wrapper"></div>
 
     </div>
     <script>
-        var MAP_SIZE = 1000;
+        //https://thelifeengine.net/
+        var MAP_SIZE = 400;
         var MUTATION_RATE = 0.01;
-        var POPULATION_SIZE  = 1000;
-        var GENERATIONS = 100;
+        var POPULATION_SIZE = 1000;
+        var GENERATIONS = 1000;
         var MAX_AGE = 300;
         var INTERVAL = 1;
         var EVENT_SIZE = 5;
-        // var GENES_QUANTITY = 1000;
-        // var NEURONS_QUANTITY = 300;
-        var GENES_QUANTITY = 100;
-        var NEURONS_QUANTITY = 50;
-        // var GENES_QUANTITY = 24;
-        // var NEURONS_QUANTITY = 4;
+        // var GENES_QUANTITY = 7000;
+        // var NEURONS_QUANTITY = 300; //23.333 / 1
+        // var GENES_QUANTITY = 240;
+        // var NEURONS_QUANTITY = 50;
+        var GENES_QUANTITY = 24;
+        var NEURONS_QUANTITY = 4;
+        // var GENES_QUANTITY = 240;
+        // var NEURONS_QUANTITY = 50;
         var MAP_GRID = {};
         var MAP_TILES = Math.floor(MAP_SIZE / EVENT_SIZE);
 
-        function survival(brain){
-            if(brain.event.killed) return false;
+        function survival(brain) {
+            if (brain.event.killed) return false;
             const x = (brain.event.x * EVENT_SIZE);
             const y = (brain.event.y * EVENT_SIZE);
             //top right
-            if(x >= 700 && y <= 300){
+            if (x >= 280 && y <= 120) {
                 return true
             }
             //top left
-            if(x <= 300 && y <= 300){
+            if (x <= 280 && y <= 120) {
                 return true
             }
 
             //down left
-            if(x <= 300 && y >= 700){
+            if (x <= 120 && y >= 280) {
                 return true
             }
 
-              //down right
-            if(x >= 700 && y >= 700){
+            //down right
+            if (x >= 120 && y >= 280) {
                 return true
             }
             return false;
-            
+
         }
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/7.1.2/mermaid.min.js"></script>
     <script src="./index.js" crossorigin type="module"></script>
 </body>
+
 </html>

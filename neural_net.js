@@ -129,8 +129,46 @@ export function mutateGene(gene) {
     }
     return gene;
 }
+export function genomeToMermaid(genome, total_neurons){
+    const brain = getBrainFrom(genome, {}, total_neurons);
+    let mermaid_header = '';
+    let mermaid_body = '';
 
+    actions.forEach((action, index) => {
+        if(brain.actions[index]){
+            mermaid_header += `style A${index} fill:#f44336\nstyle A${index} color:#ffffff\n`;
+            mermaid_header += `A${index}((${action.name}))\n`;
+        }
+    });
 
+    Object.keys(brain.inputs).forEach((index)=> {
+        const connections = brain.inputs[index];
+        if(connections && connections.length){
+            mermaid_header += `style I${index} fill:#00758f\nstyle I${index} color:#ffffff\n`;
+            mermaid_header += `I${index}((${inputs[index].name}))\n`;
+            connections.forEach((connection)=> {
+                mermaid_body += `I${index} -- ${connection.weight.toFixed(6)} --> ${connection.type ? 'A' : 'N'}${connection.id}\n`;
+            });
+        }
+    });
+    Object.keys(brain.neurons).forEach((index)=> {
+        const connections = brain.neurons[index];
+        if(connections && connections.length){
+            mermaid_body += `N${index}((N${index}))\n`;
+
+            connections.forEach((connection)=> {
+                mermaid_body += `N${index} -- ${connection.weight.toFixed(6)} --> ${connection.type ? 'A' : 'N'}${connection.id}\n`;
+            });
+        }
+    });
+    return `graph TD\n${mermaid_header}\n${mermaid_body}`;
+}
+export function decodeGenome(encoded_genome){
+    return encoded_genome.trim().split(' ').map((gene)=> decodeGene(gene));
+}
+export function encodeGenome(genome){
+    return genome.map((gene)=> encodeGene(gene)).join(' ');
+}
 
 export function encodeGene(gene) {
     //max source/sink id 32767
@@ -169,6 +207,7 @@ export function getBrainFrom(genome, event, total_neurons) {
         event,
         inputs: {},
         neurons: {},
+        actions: {}, //just for logging connected actions, maybe util in the future
         age: 0,
         total_neurons,
         update: () => update_brain(brain)
@@ -191,6 +230,9 @@ export function getBrainFrom(genome, event, total_neurons) {
             connection.push({ type: gene.sink_type, id: sink_id, weight: gene.weight, quantity: 1 });
         }
         connections[source_id] = connection;
+        if(gene.sink_type){
+            brain.actions[sink_id] = true;
+        }
     });
 
     return brain;

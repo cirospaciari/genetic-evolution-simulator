@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genome View</title>
+    <style>
+
+        .scroll-x {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .scroll-x p {
+            display: block;
+            word-break: keep-all;
+            white-space: nowrap;
+        }
+
+        #mermaid-wrapper {
+            width: 100vw;
+        }
+    </style>
+</head>
+
+<body>
+
+    <p>Genome:</p>
+    <div class="scroll-x">
+        <p id="genome_code"></p>
+    </div>
+    <div id="mermaid-wrapper"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/7.1.2/mermaid.min.js"></script>
+    <script src="./index.js" crossorigin type="module"></script>
+</body>
+
+</html>

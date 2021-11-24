@@ -6,11 +6,11 @@ export function getRandomInt(min, max) {
 export function getRandomArbitrary(min, max) {
     return Math.random() * (max - min) + min;
 }
-export function hasEvent(x, y){
+export function hasEvent(x, y) {
     return ((MAP_GRID[x] || {})[y]);
 }
-export function setPosition(x, y, event){
-    if(hasEvent(x, y)) return false;
+export function setPosition(x, y, event) {
+    if (hasEvent(x, y)) return false;
 
     MAP_GRID[x] = MAP_GRID[x] || {}
     MAP_GRID[x][y] = event;
@@ -20,15 +20,15 @@ export function setPosition(x, y, event){
     event.y = y;
     return true;
 }
-export function cleanPosition(x, y){
+export function cleanPosition(x, y) {
     MAP_GRID[x] = MAP_GRID[x] || {}
     MAP_GRID[x][y] = undefined;
     delete MAP_GRID[x][y];
 }
 
-export function getEventforwand(x, y, direction){
+export function getEventforwand(x, y, direction) {
 
-    switch(direction){
+    switch (direction) {
         case 1: //left
             return hasEvent(x - 1, y);
         case 2: //right
@@ -40,18 +40,32 @@ export function getEventforwand(x, y, direction){
         default:
             return undefined;
     }
-    
+
 }
 export function genomeColor(genome) {
     const front = genome[0];
     const back = genome[genome.length - 1];
 
     return '#' + ((genome.length & 1)
-    | ((front.source_type)    << 1)
-    | ((back.source_type)     << 2)
-    | ((front.sink_type)      << 3)
-    | ((back.sink_type)       << 4)
-    | ((front.source_id & 1) << 5)
-    | ((front.sink_id & 1)   << 6)
-    | ((back.source_id & 1)  << 7)).toString(16).padStart(6, '0').substr(0, 6);
+        | ((front.source_type) << 1)
+        | ((back.source_type) << 2)
+        | ((front.sink_type) << 3)
+        | ((back.sink_type) << 4)
+        | ((front.source_id & 1) << 5)
+        | ((front.sink_id & 1) << 6)
+        | ((back.source_id & 1) << 7)).toString(16).padStart(6, '0').substr(0, 6);
+}
+
+if(mermaid){
+    mermaid.initialize({startOnLoad:false});
+}
+export function renderMermaid(code, element) {
+    if(!mermaid) return false;
+    element = element || document.querySelector('#mermaid-wrapper');
+    
+    mermaid.mermaidAPI.render('mermaid-render', code, (svgCode, bindFunctions) => {
+        element.innerHTML = svgCode;
+
+        bindFunctions(element);
+    }, element);
 }
