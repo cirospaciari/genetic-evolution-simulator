@@ -76,16 +76,18 @@
     <div class="viewport-wrapper">
 
         <canvas id="viewport"></canvas>
-        <div class="survival_zone top_left"></div>
+        <!-- <div class="survival_zone top_left"></div>
         <div class="survival_zone top_right"></div>
         <div class="survival_zone down_right"></div>
-        <div class="survival_zone down_left"></div>
+        <div class="survival_zone down_left"></div> -->
     </div>
     
     <div id="stats">
         <p>Generation: <span id="generation_label"></span></p>
         <p>Survival Rate: <span id="survival_rate_label"></span></p>
-        <p>Kills: <span id="kills_rate_label"></span></p>
+        <p>Murder Rate: <span id="kills_rate_label"></span></p>
+        <p>Eat Rate: <span id="eat_rate_label"></span></p>
+
         <p>Diversity: <span id="diversity_label"></span></p>
 
         <p>Genomes by Popularity:</p>
@@ -104,45 +106,46 @@
         //https://thelifeengine.net/
         var MAP_SIZE = 400;
         var MUTATION_RATE = 0.01;
-        var POPULATION_SIZE = 1000;
+        var POPULATION_SIZE = 400;
         var GENERATIONS = 1000;
-        var MAX_AGE = 100;
+        var MAX_AGE = 300;
         var INTERVAL = 1;
         var EVENT_SIZE = 5;
         // var GENES_QUANTITY = 7000;
         // var NEURONS_QUANTITY = 300; //23.333 / 1
         // var GENES_QUANTITY = 240;
-        // var NEURONS_QUANTITY = 50;
-        var GENES_QUANTITY = 24;
-        var NEURONS_QUANTITY = 4;
-        // var GENES_QUANTITY = 240;
-        // var NEURONS_QUANTITY = 50;
+        // var NEURONS_QUANTITY = 20;
+        // var GENES_QUANTITY = 24;
+        // var NEURONS_QUANTITY = 4;
+        var GENES_QUANTITY = 100;
+        var NEURONS_QUANTITY = 10;
         var MAP_GRID = {};
         var MAP_TILES = Math.floor(MAP_SIZE / EVENT_SIZE);
 
         function survival(brain) {
-            if (brain.event.killed) return false;
-            const x = (brain.event.x * EVENT_SIZE);
-            const y = (brain.event.y * EVENT_SIZE);
-            //top right
-            if (x >= MAP_SIZE - 60 && y <= 60) {
-                return true
-            }
-            //top left
-            if (x <= 60 && y <= 60) {
-                return true
-            }
+            return brain.event.reproduced && brain.event.eated;
+            
+            // const x = (brain.event.x * EVENT_SIZE);
+            // const y = (brain.event.y * EVENT_SIZE);
+            // //top right
+            // if (x >= MAP_SIZE - 60 && y <= 60) {
+            //     return true
+            // }
+            // //top left
+            // if (x <= 60 && y <= 60) {
+            //     return true
+            // }
 
-            //down left
-            if (x <= 60 && y >= MAP_SIZE - 60) {
-                return true
-            }
+            // //down left
+            // if (x <= 60 && y >= MAP_SIZE - 60) {
+            //     return true
+            // }
 
-            //down right
-            if (x >= MAP_SIZE - 60 && y >= MAP_SIZE - 60) {
-                return true
-            }
-            return false;
+            // //down right
+            // if (x >= MAP_SIZE - 60 && y >= MAP_SIZE - 60) {
+            //     return true
+            // }
+            // return false;
 
         }
     </script>

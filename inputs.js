@@ -46,7 +46,7 @@ function has_lost_energy(brain) {
     const event = brain.event;
     //if health has changed
     if (event.last_energy < event.energy) {
-        event.last_energy_change = Date.now();
+        event.last_energy_change = event.age;
         event.last_energy_drop = event.age;
         return 1.0 - energy_percentage(brain);
     }
@@ -57,6 +57,7 @@ function has_gain_energy(brain) {
     const event = brain.event;
     //if health has changed
     if (event.last_energy > event.energy) {
+        event.last_energy_change = event.age;
         return 1.0 - energy_percentage(brain);
     }
     return 0.0;
