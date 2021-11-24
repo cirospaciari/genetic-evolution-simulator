@@ -2,9 +2,6 @@
 import { getBrainFrom, mutateGenome, randomGenome, encodeGenome, genomeToMermaid, decodeGenome } from './neural_net.js';
 import { genomeColor, getRandomInt, hasEvent, setPosition, renderMermaid } from './helpers.js'
 
-function create_event(genome){
-    return { ...getRandomAvailablePosition(), color: genomeColor(genome), age: 0, max_x: MAP_TILES, max_y: MAP_TILES, max_age: MAX_AGE,reproduced: 0, reproduce_cost: 20, killer: null, eated: 0, kills: 0, hp: 100, energy: 40, max_energy: 40, max_hp: 100, atk: 20, atk_cost: 5, energy_regeneration_period: 30 };
-}
 
 function getRandomAvailablePosition() {
     let position = null;
@@ -13,6 +10,53 @@ function getRandomAvailablePosition() {
     } while (hasEvent(position.x, position.y));
     return position;
 
+}
+function create_event(genome) {
+    return {
+        ...getRandomAvailablePosition(), color: genomeColor(genome), holding: null, age: 0, max_x: MAP_TILES, max_y: MAP_TILES, 
+        max_age: event_stats.max_age || 100,
+        deleted: false,
+        reproduced: 0,
+        edible: true,
+        killer: null,
+        eated: 0,
+        kills: 0, 
+        hp: event_stats.hp || event_stats.max_hp || 100, 
+        reproduce_cost: 0, 
+        max_hp: event_stats.max_hp || 100, 
+        move_cost: 0, 
+        energy: event_stats.energy || event_stats.max_energy || 100,
+        max_energy: event_stats.max_energy || 100,
+        atk: event_stats.atk || 20,
+        atk_cost: event_stats.atk_cost || 10, 
+        energy_regeneration_period: event_stats.energy_regeneration_period || 10, 
+        passthrough: false
+    };
+}
+function create_food_event() {
+    return { ...getRandomAvailablePosition(), color: "#00F100", killed: true, plant: true, deleted: false, passthrough: true, edible: true };
+}
+function create_rock_event() {
+    return { ...getRandomAvailablePosition(), color: "#E8E8E8", killed: true, plant: false, deleted: false, passthrough: true, edible: false };
+}
+function populateFood() {
+    const foods = [];
+    for (let i = 0; i < RANDOM_FOOD_QUANTITY; i++) {
+        const event = create_food_event();
+        setPosition(event.x, event.y, event);
+        foods.push(event);
+    }
+    return foods;
+}
+
+function populateRocks() {
+    const foods = [];
+    for (let i = 0; i < RANDOM_ROCK_QUANTITY; i++) {
+        const event = create_rock_event();
+        setPosition(event.x, event.y, event);
+        foods.push(event);
+    }
+    return foods;
 }
 
 function randomBrain() {
@@ -35,6 +79,8 @@ export function randomPopulation(quantity) {
 
 
 let events = randomPopulation(POPULATION_SIZE);
+let obstacles = [...populateFood(), ...populateRocks()];
+
 let generation = 0;
 const canvas = document.getElementById('viewport');
 const ctx = canvas.getContext('2d');
@@ -53,20 +99,27 @@ function draw() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    obstacles.forEach((event) => {
+        if (!event.deleted) {
+            ctx.fillStyle = event.color;
+            ctx.fillRect(event.x * EVENT_SIZE, event.y * EVENT_SIZE, EVENT_SIZE, EVENT_SIZE);
+        }
+    });
     events.forEach((brain) => {
 
         const event = brain.event;
-        ctx.fillStyle = event.color;
-        ctx.fillRect(event.x * EVENT_SIZE, event.y * EVENT_SIZE, EVENT_SIZE, EVENT_SIZE);
-
+        if (!event.deleted) {
+            ctx.fillStyle = event.color;
+            ctx.fillRect(event.x * EVENT_SIZE, event.y * EVENT_SIZE, EVENT_SIZE, EVENT_SIZE);
+        }
         if (!event.killed && event.age < event.max_age) { //dies on age MAX_AGE
             event.last_hp = event.hp;
             event.last_energy = event.energy;
             event.is_moving = false;
-            event.is_resting = false;
             if (event.age - event.last_energy_change > event.energy_regeneration_period && event.energy < event.max_energy) {
                 event.energy++;
                 event.last_energy_change = event.age;
+                event.is_resting = false;
             }
             brain.update();
 
@@ -83,9 +136,12 @@ function draw() {
             generation++;
             const died = events.filter((brain) => brain.event.killed);
             const kills = events.filter((brain) => brain.event.killer).length;
-            const eated =  events.filter((brain) => brain.event.eated).length;
+            const eated = events.filter((brain) => brain.event.eated).length;
             const parents = events.filter(survival);
             MAP_GRID = {};
+            //place random food and rocks
+            obstacles = [...populateFood(), ...populateRocks()];
+
             const genome_ranking = {};
             events = [];
             if (parents.length) {
@@ -94,16 +150,19 @@ function draw() {
                 while (events.length < POPULATION_SIZE) {
                     for (let i = 0; i < parents.length && events.length < POPULATION_SIZE; i++) {
                         const brain = parents[i];
-                        let new_genome = brain.genome;
                         const encoded_genome = encodeGenome(brain.genome);
-                        genome_ranking[encoded_genome] = genome_ranking[encoded_genome] || 0;
-                        genome_ranking[encoded_genome]++;
 
-                        if (Math.random() < MUTATION_RATE) new_genome = mutateGenome(new_genome);
-                        const event = create_event(new_genome);
-                        setPosition(event.x, event.y, event);
-                        const new_brain = getBrainFrom(new_genome, event, brain.total_neurons);
-                        events.push(new_brain);
+                        for (let j = 0; j < brain.event.reproduced && events.length < POPULATION_SIZE; j++) {
+                            genome_ranking[encoded_genome] = genome_ranking[encoded_genome] || 0;
+                            genome_ranking[encoded_genome]++;
+
+                            let new_genome = brain.genome;
+                            if (Math.random() < MUTATION_RATE) new_genome = mutateGenome(new_genome);
+                            const event = create_event(new_genome);
+                            setPosition(event.x, event.y, event);
+                            const new_brain = getBrainFrom(new_genome, event, brain.total_neurons);
+                            events.push(new_brain);
+                        }
                     }
                 }
             } else {
@@ -126,6 +185,7 @@ function draw() {
                 }
 
             }
+
             const sorted_genomes = Object.entries(genome_ranking).sort((a, b) => b[1] - a[1]);
             diversity_label.textContent = sorted_genomes.length;
 
@@ -175,3 +235,4 @@ function draw() {
 canvas.width = MAP_SIZE;
 canvas.height = MAP_SIZE;
 draw();
+

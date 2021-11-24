@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Genome Simulator</title>
     <style>
         html,
         body {
@@ -105,20 +105,30 @@
     <script>
         //https://thelifeengine.net/
         var MAP_SIZE = 400;
-        var MUTATION_RATE = 0.01;
+        var MUTATION_RATE = 0.1;
         var POPULATION_SIZE = 400;
+        var RANDOM_FOOD_QUANTITY = 1000;
+        var RANDOM_ROCK_QUANTITY = 500;
         var GENERATIONS = 1000;
-        var MAX_AGE = 300;
         var INTERVAL = 1;
         var EVENT_SIZE = 5;
+        var KILLER_COLOR = "#5e0600";
+        var DEAD_COLOR = "#FF0000";
+        var ABLE_TO_HIT = 0.7; //30% of life
+        var ABLE_TO_REPRODUCE = 0.5; //50% of life
+        var CAN_EAT = 0.5; //50% of energy
+        var event_stats = { max_age: 100, reproduce_cost: 20, max_hp: 100, move_cost: 1, max_energy: 20, atk: 20, atk_cost: 10, energy_regeneration_period: 10 };
+
         // var GENES_QUANTITY = 7000;
         // var NEURONS_QUANTITY = 300; //23.333 / 1
         // var GENES_QUANTITY = 240;
         // var NEURONS_QUANTITY = 20;
         // var GENES_QUANTITY = 24;
         // var NEURONS_QUANTITY = 4;
-        var GENES_QUANTITY = 100;
-        var NEURONS_QUANTITY = 10;
+        // var GENES_QUANTITY = 100;
+        // var NEURONS_QUANTITY = 10;
+        var GENES_QUANTITY = 50;
+        var NEURONS_QUANTITY = 5;
         var MAP_GRID = {};
         var MAP_TILES = Math.floor(MAP_SIZE / EVENT_SIZE);
 

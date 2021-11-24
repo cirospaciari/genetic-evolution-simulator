@@ -2,7 +2,7 @@ import { getEventforwand, getRandomInt } from './helpers.js';
 
 function has_event_forwand(brain) {
     const event = brain.event;
-    //TODO: calculate urge
+    if (event.direction) event.direction = getRandomInt(1, 5);
     return getEventforwand(event.x, event.y, event.direction) ? 1.0 : 0.0;
 }
 
@@ -36,10 +36,18 @@ function health_percentage(brain) {
     return event.hp / event.max_hp;
 }
 
-function has_someone_forward(brain) {
+
+function has_food_forward(brain) {
     const event = brain.event;
     if (event.direction) event.direction = getRandomInt(1, 5);
-    return getEventforwand(event.x, event.y, event.direction || 1) ? 1.0 : 0.0;
+    const someone = getEventforwand(event.x, event.y, event.direction || 1);
+    return someone && someone.killed && someone.edible ? 1.0 : 0.0;
+}
+function has_barrier_forward(brain) {
+    const event = brain.event;
+    if (event.direction) event.direction = getRandomInt(1, 5);
+    const someone = getEventforwand(event.x, event.y, event.direction || 1);
+    return someone && someone.killed && !someone.edible ? 1.0 : 0.0;
 }
 
 function has_lost_energy(brain) {
@@ -51,6 +59,10 @@ function has_lost_energy(brain) {
         return 1.0 - energy_percentage(brain);
     }
     return 0.0;
+}
+
+function is_holding_something(brain){
+    return brain.event.holding ? 1.0 : 0.0;
 }
 
 function has_gain_energy(brain) {
@@ -68,6 +80,7 @@ function energy_percentage(brain) {
     const event = brain.event;
     return event.energy / event.max_energy;
 }
+
 
 function has_someone_around(brain) {
     const event = brain.event;
@@ -97,5 +110,12 @@ function has_someone_around(brain) {
     return 1.0 - distance;
 }
 
-const inputs = [Math.random, has_event_forwand, was_damaged, was_heal, has_someone_around, health_percentage, has_someone_forward, energy_percentage, was_damaged, was_heal, has_gain_energy, has_lost_energy, has_low_energy, has_low_health];
+function can_reproduce(brain){
+    return is_mature(brain) && brain.event.energy > brain.event.energy >= brain.event.reproduce_cost ? 1.0: 0.0;
+}
+
+function is_mature(brain){
+    return brain.event.age / brain.event.max_age >= ABLE_TO_REPRODUCE ? 1.0: 0.0;
+}
+const inputs = [Math.random, has_event_forwand, was_heal, has_someone_around, was_damaged, was_heal, has_gain_energy, has_lost_energy,has_barrier_forward, has_low_energy, has_low_health, is_holding_something, has_food_forward, can_reproduce, is_mature];
 export default inputs;

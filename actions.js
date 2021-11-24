@@ -1,14 +1,17 @@
 import { getRandomInt, setPosition, getEventforwand, cleanPosition } from './helpers.js';
 //add urge to move
-
+window.getEventforwand = getEventforwand;
 function move_left(event, value) {
     if (!can_do_something(event)) return;
     //check probability
     if (value < 0 && Math.random() > value) return;
     event.direction = 1;
-    const new_pos = event.x - 1;
-    if (event.x > 0 && setPosition(new_pos, event.y, event)) {
-        event.energy--;//only decrement energy when action is taken
+    let new_pos = event.x - 1;
+    if (event.x < 0) {
+        new_pos = event.max_x - 1;
+    }
+    if (setPosition(new_pos, event.y, event)) {
+        event.energy -= event.move_cost;//only decrement energy when action is taken
     }
 }
 
@@ -17,9 +20,12 @@ function move_right(event, value) {
     //check probability
     if (value < 0 && Math.random() > value) return;
     event.direction = 2;
-    const new_pos = event.x + 1;
-    if (event.x < event.max_x && setPosition(new_pos, event.y, event)) {
-        event.energy--;//only decrement energy when action is taken
+    let new_pos = event.x + 1;
+    if (event.x >= event.max_x) {
+        new_pos = 0;
+    }
+    if (setPosition(new_pos, event.y, event)) {
+        event.energy -= event.move_cost;//only decrement energy when action is taken
     }
 }
 
@@ -28,9 +34,12 @@ function move_up(event, value) {
     //check probability
     if (value < 0 && Math.random() > value) return;
     event.direction = 3;
-    const new_pos = event.y - 1;
-    if (event.y > 0 && setPosition(event.x, new_pos, event)) {
-        event.energy--;//only decrement energy when action is taken
+    let new_pos = event.y - 1;
+    if (event.y < 0) {
+        new_pos = event.max_y - 1;
+    }
+    if (setPosition(event.x, new_pos, event)) {
+        event.energy -= event.move_cost;//only decrement energy when action is taken
     }
 }
 
@@ -39,9 +48,12 @@ function move_down(event, value) {
     //check probability
     if (value < 0 && Math.random() > value) return;
     event.direction = 4;
-    const new_pos = event.y + 1;
-    if (event.y < event.max_y && setPosition(event.x, new_pos, event)) {
-        event.energy--;//only decrement energy when action is taken
+    let new_pos = event.y + 1;
+    if (event.y >= event.max_y) {
+        new_pos = 0;
+    }
+    if (setPosition(event.x, new_pos, event)) {
+        event.energy -= event.move_cost;//only decrement energy when action is taken
     }
 }
 
@@ -108,53 +120,84 @@ function rest(event, value) {
     event.is_resting = true;
 }
 
-function eat_meat(event, value) {
-    if (value < 0 && Math.random() > value) return;
+function grab_food(event, value) {
+    if (!can_do_something(event)) return;
+    if (value < 0 && Math.random() > value && !event.holding) return;
     const target = getEventforwand(event.x, event.y, event.direction);
-    if (target && target.killed) {
-        event.eated++;
-        
-        if(event.hp < event.max_hp){
-            //recover HP    
-            event.hp += 10;
-            if(event.hp > event.max_hp) event.hp = event.max_hp;
-        }
-
-        if(event.energy < event.max_energy){
-            //boost energy
-            event.energy += 10;
-            if(event.energy > event.max_energy) event.energy = event.max_energy;
-        }
+    if (target && target.killed && target.edible) {
+        event.holding = target;
         cleanPosition(target.x, target.y);
+        target.deleted = true;
     }
 }
+function steal_food(event, value) {
+    if (!can_do_something(event)) return;
+    if (value < 0 && Math.random() > value && !event.holding) return;
+    const target = getEventforwand(event.x, event.y, event.direction);
+    if (target && target.holding) {
+        event.holding = target.holding;
+        target.holding = null;
+    }
+}
+function eat_food(event, value) {
+    if (value < 0 && Math.random() > value) return;
+    const target = event.holding || getEventforwand(event.x, event.y, event.direction);
+    if (target && target.killed && target.edible && (event.energy / event.max_energy) < CAN_EAT) {
+        event.eated++;
+        event.holding = null;
+        if (event.hp < event.max_hp) {
+            //recover HP    
+            event.hp += 10;
+            if (event.hp > event.max_hp) event.hp = event.max_hp;
+        }
+
+        //boost energy
+        event.energy += 10;
+        if (event.energy > event.max_energy) event.energy = event.max_energy;
+
+        cleanPosition(target.x, target.y);
+        target.deleted = true;
+    }
+}
+
 function hit(event, value) {
-    if (!can_do_something(event) && event.energy >= event.atk_cost) return;
+    if (!can_do_something(event) ||
+    event.energy < event.atk_cost ||
+    (event.age / event.max_age) < ABLE_TO_HIT) return;
+
     if (value < 0 && Math.random() > value) return;
     const target = getEventforwand(event.x, event.y, event.direction);
-    if (target) {
+    if (target && !target.killed) {
         event.energy -= event.atk_cost;
         target.last_hp = target.hp;
         target.hp -= event.atk;
         if (target.hp <= 0) {
             target.killed = true;
             target.killer = event;
+            if(DEAD_COLOR) target.color = DEAD_COLOR; //dead
+            if(KILLER_COLOR) event.color = KILLER_COLOR; //killer
             event.kills++;
         }
     }
 }
-function reproduces(event, value){
-    if (!can_do_something(event) && event.energy >= event.reproduce_cost) return;
+
+function reproduces(event, value) {
+    if (!can_do_something(event) ||
+        event.energy < event.reproduce_cost ||
+        (event.age / event.max_age) < ABLE_TO_REPRODUCE) return;
+
     if (value < 0 && Math.random() > value) return;
     const target = getEventforwand(event.x, event.y, event.direction);
-    if (target && !target.killed && target.energy >= target.reproduce_cost && (!target.partner || target.partner === event)) {
+    if (target && !target.killed &&
+        (target.age / target.max_age) >= ABLE_TO_REPRODUCE &&
+        target.energy >= target.reproduce_cost) {
         event.energy -= event.reproduce_cost;
         target.energy -= target.reproduce_cost;
-        target.partner = event;
-        event.partner = target;
         event.reproduced++;
-        // target.reproduced++;
+        target.reproduced++;
     }
 }
-const actions = [move_left, move_right, move_up, move_down, move_random, move_foward, move_backward, rest, hit, eat_meat, reproduces];
+
+
+const actions = [move_left, move_right, move_up, move_down, move_random, move_foward, move_backward, rest, eat_food, reproduces, grab_food, steal_food, hit];
 export default actions;

@@ -10,14 +10,18 @@ export function hasEvent(x, y) {
     return ((MAP_GRID[x] || {})[y]);
 }
 export function setPosition(x, y, event) {
-    if (hasEvent(x, y)) return false;
+    const event_in_place = hasEvent(x, y);
+    if (event_in_place) return false;
 
     MAP_GRID[x] = MAP_GRID[x] || {}
     MAP_GRID[x][y] = event;
 
-    cleanPosition(event.x, event.y);
-    event.x = x;
-    event.y = y;
+    if(event.x !== x || event.y !== y){
+        cleanPosition(event.x, event.y);
+    
+        event.x = x;
+        event.y = y;
+    }
     return true;
 }
 export function cleanPosition(x, y) {
