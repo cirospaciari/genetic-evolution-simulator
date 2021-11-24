@@ -15,7 +15,7 @@ function getRandomAvailablePosition() {
 function randomBrain() {
 
     const genome = randomGenome(GENES_QUANTITY);
-    const event = { ...getRandomAvailablePosition(), color: genomeColor(genome), age: 0, max_x: MAP_TILES, max_y: MAP_TILES, hp: 100, energy: 150, max_energy: 150, max_hp: 100, atk: 10 };
+    const event = { ...getRandomAvailablePosition(), color: genomeColor(genome), age: 0, max_x: MAP_TILES, max_y: MAP_TILES, max_age: MAX_AGE, hp: 100, energy: 100, max_energy: 100, max_hp: 100, atk: 10 };
     setPosition(event.x, event.y, event);
     const brain = getBrainFrom(genome, event, NEURONS_QUANTITY);
     return brain;
@@ -54,7 +54,7 @@ function draw() {
 
         const event = brain.event;
 
-        if (!event.killed && event.age < 300) { //dies on age 300
+        if (!event.killed && event.age < event.max_age) { //dies on age MAX_AGE
             ctx.fillStyle = event.color;
             ctx.fillRect(event.x * EVENT_SIZE, event.y * EVENT_SIZE, EVENT_SIZE, EVENT_SIZE);
 
@@ -69,7 +69,7 @@ function draw() {
         }
     });
 
-    if (events.some((brain) => brain.event.age < MAX_AGE && !brain.event.killed)) {
+    if (events.some((brain) => brain.event.age < brain.event.max_age && !brain.event.killed)) {
         setTimeout(draw, INTERVAL);//continues
     } else {
         if (generation < GENERATIONS) { //stop
@@ -89,7 +89,7 @@ function draw() {
                     genome_ranking[encoded_genome]++;
 
                     if (Math.random() < MUTATION_RATE) new_genome = mutateGenome(new_genome);
-                    const event = { ...brain.event, ...getRandomAvailablePosition(), age: 0, color: genomeColor(new_genome), hp: 100, energy: 150, killed: false };
+                    const event = { ...brain.event, ...getRandomAvailablePosition(), age: 0, color: genomeColor(new_genome), hp: 100, energy: 100, killed: false };
                     setPosition(event.x, event.y, event);
                     const new_brain = getBrainFrom(new_genome, event, brain.total_neurons);
                     events.push(new_brain);
@@ -131,12 +131,15 @@ function draw() {
 
 
 // resize the canvas to fill browser window dynamically
-window.addEventListener('resize', resizeCanvas, false);
+// window.addEventListener('resize', resizeCanvas, false);
 
-function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    draw();
-}
+// function resizeCanvas() {
+//     canvas.width = window.innerWidth;
+//     canvas.height = window.innerHeight;
+//     draw();
+// }
 
-resizeCanvas();
+// resizeCanvas();
+canvas.width = MAP_SIZE;
+canvas.height = MAP_SIZE;
+draw();

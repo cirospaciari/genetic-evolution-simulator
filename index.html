@@ -13,11 +13,14 @@
             border: 0;
             padding: 0;
         }
+        .viewport-wrapper {
+            position: relative;
+        }
 
         .survival_zone {
             background-color: rgba(0, 100, 0, 0.5);
-            width: 125px;
-            height: 125px;
+            width: 65px;
+            height: 65px;
             position: absolute;
             z-index: 10;
         }
@@ -29,16 +32,16 @@
 
         .survival_zone.top_right {
             top: 0;
-            left: 280px;
+            left: 335px;
         }
 
         .survival_zone.down_right {
-            top: 280px;
-            left: 280px;
+            bottom: 5px;
+            left: 335px;
         }
 
         .survival_zone.down_left {
-            top: 280px;
+            bottom: 5px;
             left: 0;
         }
 
@@ -70,11 +73,15 @@
 </head>
 
 <body>
-    <canvas id="viewport"></canvas>
-    <div class="survival_zone top_left"></div>
-    <div class="survival_zone top_right"></div>
-    <div class="survival_zone down_right"></div>
-    <div class="survival_zone down_left"></div>
+    <div class="viewport-wrapper">
+
+        <canvas id="viewport"></canvas>
+        <div class="survival_zone top_left"></div>
+        <div class="survival_zone top_right"></div>
+        <div class="survival_zone down_right"></div>
+        <div class="survival_zone down_left"></div>
+    </div>
+    
     <div id="stats">
         <p>Generation: <span id="generation_label"></span></p>
         <p>Survival Rate: <span id="survival_rate_label"></span></p>
@@ -99,7 +106,7 @@
         var MUTATION_RATE = 0.01;
         var POPULATION_SIZE = 1000;
         var GENERATIONS = 1000;
-        var MAX_AGE = 300;
+        var MAX_AGE = 100;
         var INTERVAL = 1;
         var EVENT_SIZE = 5;
         // var GENES_QUANTITY = 7000;
@@ -118,21 +125,21 @@
             const x = (brain.event.x * EVENT_SIZE);
             const y = (brain.event.y * EVENT_SIZE);
             //top right
-            if (x >= 280 && y <= 120) {
+            if (x >= MAP_SIZE - 60 && y <= 60) {
                 return true
             }
             //top left
-            if (x <= 280 && y <= 120) {
+            if (x <= 60 && y <= 60) {
                 return true
             }
 
             //down left
-            if (x <= 120 && y >= 280) {
+            if (x <= 60 && y >= MAP_SIZE - 60) {
                 return true
             }
 
             //down right
-            if (x >= 120 && y >= 280) {
+            if (x >= MAP_SIZE - 60 && y >= MAP_SIZE - 60) {
                 return true
             }
             return false;
